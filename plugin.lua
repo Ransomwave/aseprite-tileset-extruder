@@ -112,10 +112,26 @@ local function runExport(plugin)
 			scaled:close()
 			extruded:close()
 
-			app.alert({
-				title = "Tileset Extruder",
-				text = "Exported:\n- " .. rawPath .. "\n- " .. scaledPath,
+			local exportedDlg = Dialog("Tileset Extruder")
+			exportedDlg:newrow({ always = true })
+
+			-- Main headline
+			exportedDlg:label({ text = "Exported Successfully:" })
+
+			-- Use separate labels to stack paths vertically as new lines
+			exportedDlg:label({ text = "- " .. rawPath })
+			exportedDlg:label({ text = "- " .. scaledPath })
+
+			-- Add a standard confirmation button to dismiss it
+			exportedDlg:button({
+				text = "&OK",
+				onclick = function()
+					exportedDlg:close()
+				end,
 			})
+
+			-- Display it modal (wait=true pauses script execution until closed)
+			exportedDlg:show({ wait = true })
 		else
 			-- Legacy single-file mode: extruded + scaled in one PNG
 			if p.scale ~= 1 then
@@ -172,7 +188,7 @@ function init(plugin)
 	-- Configure dialog
 	plugin:newCommand({
 		id = "TilesetExtruderConfigure",
-		title = "Configure…",
+		title = "Configure...",
 		group = "tileset_extruder_group",
 		onclick = function()
 			local p = plugin.preferences
@@ -215,12 +231,14 @@ function init(plugin)
 	-- Toggle auto-export on/off
 	plugin:newCommand({
 		id = "TilesetExtruderToggle",
-		title = "Auto-Export on Save: OFF", -- label updated at runtime below
+		title = "Toggle Auto-Export on Save",
 		group = "tileset_extruder_group",
+
 		onclick = function()
 			plugin.preferences.enabled = not plugin.preferences.enabled
+
 			-- Can't rename menu items at runtime, so we show a quick alert instead
-			local state = plugin.preferences.enabled and "ENABLED ✓" or "DISABLED"
+			local state = plugin.preferences.enabled and "ENABLED" or "DISABLED"
 			app.alert({ title = "Tileset Extruder", text = "Auto-export " .. state })
 		end,
 	})
